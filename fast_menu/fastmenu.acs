@@ -1,0 +1,55 @@
+#library "FASTMENU"
+#include "zcommon.acs"
+
+#define FM_MAGICNUMBER 157243
+#define DEBUG false
+
+
+script "fastmenu_open" (void) net {
+	SetUserCvar(PlayerNumber(),"fm_isopen",true);
+	if (DEBUG) {
+	Log(s:"Opening menu...");
+	}
+}
+
+script "fastmenu_display" ENTER { 
+	if(GetUserCVar(PlayerNumber(),"fm_isopen") == false) {
+		Delay(1);
+		restart;
+	}
+	int msgIndex = FM_MAGICNUMBER;
+	HudMessage(s:"Garbage menu";
+		HUDMSG_PLAIN, msgIndex, CR_TAN, 0.5, 0.4, 0);
+	msgIndex++;
+	
+	HudMessage(s:"X: ", d:(GetActorX(0)>>16);
+		HUDMSG_PLAIN, msgIndex, CR_CYAN, 0.45, 0.415, 0);
+	msgIndex++;
+	
+	HudMessage(s:"Y: ", d:(GetActorY(0)>>16);
+		HUDMSG_PLAIN, msgIndex, CR_CYAN, 0.55, 0.415, 0);
+	msgIndex++;
+
+	SetUserCVar(PlayerNumber(),"fm_active_hudmsgs",2);
+	Delay(1);
+	restart;
+}
+
+script "fastmenu_close" (void) net {
+	if (DEBUG) {
+	Log(s:"Closing menu...");
+	}
+	clear_hud();
+}
+
+function void clear_hud (void) {
+	SetUserCvar(PlayerNumber(),"fm_isopen",false);
+	int i = FM_MAGICNUMBER;
+	int numHudElements = GetUserCVar(PlayerNumber(),"fm_active_hudmsgs");
+	for (i=FM_MAGICNUMBER; i<=FM_MAGICNUMBER+numHudElements; i++) {
+		if (DEBUG) {
+		Log(s:"Clearing element ", d:i);
+		}
+		HudMessage(s:""; HUDMSG_PLAIN,i,0,0,0,0);
+	}
+}

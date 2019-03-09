@@ -11,7 +11,7 @@ def zipdir(inpath, outpath):
     for root, dirs, files in os.walk(inpath):
         for file in files:
             currFile = os.path.join(root, file)
-            relpath = os.path.relpath(currFile, root)
+            relpath = os.path.relpath(currFile, inpath)
             print(currFile, relpath)
             zipf.write(currFile, relpath)
 

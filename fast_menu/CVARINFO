@@ -1,0 +1,2 @@
+user noarchive int fm_active_hudmsgs;
+user noarchive bool fm_isopen;

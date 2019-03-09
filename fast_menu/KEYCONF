@@ -1,0 +1,6 @@
+// keyconf lump - add fast menu keysection
+
+addkeysection "Custom Fun" "fmenu_keys"
+addmenukey "Fast Menu" +fastmenu
+alias +fastmenu "pukename fastmenu_open"
+alias -fastmenu "pukename fastmenu_close"
