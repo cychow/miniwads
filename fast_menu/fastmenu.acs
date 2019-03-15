@@ -4,7 +4,8 @@
 #define FM_MAGICNUMBER 157243
 #define DEBUG false
 
-
+// Open fastmenu - this just sets a user CVar (this can probably not 
+// be a script but just be set in the console (i.e.: fm_isopen 1)
 script "fastmenu_open" (void) net {
 	SetUserCvar(PlayerNumber(),"fm_isopen",true);
 	if (DEBUG) {
@@ -40,6 +41,15 @@ script "fastmenu_close" (void) net {
 	Log(s:"Closing menu...");
 	}
 	clear_hud();
+}
+
+script "fastmenu_toggle" (void) net {
+    if (GetUserCVar(PlayerNumber(),"fm_isopen") == false) {
+        ACS_NamedExecute("fastmenu_open",0);       
+    } else {
+        SetUserCVar(PlayerNumber(),"fm_isopen",false);   
+        ACS_NamedExecute("fastmenu_close",0);
+    }
 }
 
 function void clear_hud (void) {
