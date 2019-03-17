@@ -3,47 +3,154 @@
 
 #define FM_MAGICNUMBER 157243
 #define DEBUG false
+#define FM_CAPTURELENGTH 8
+
+
+//// µscript - get player's current speed and print it
+script "printVelocity" ENTER CLIENTSIDE {
+    int playerVelocity = VectorLength(GetActorVelX(0), GetActorVelY(0));
+	SetFont("BIGFONT");
+    	HudMessage(s:"Speed: ",
+		f:playerVelocity;
+		HUDMSG_PLAIN , FM_MAGICNUMBER-1, CR_TAN, 0, 0, 0);
+    delay(1);
+    restart;
+}
+
+// let's try a radial menu...
+// let's try a rolling average - that always works, right?
+int fm_angleArray[FM_CAPTURELENGTH] = {0};
+int fm_magArray[FM_CAPTURELENGTH] = {0};
+int fm_arrayIndex = 0;
+
+// output angle and array is the vector average of the arrays - 
+// we'll calculate that once
+int fm_angleSum = 0;
+int fm_magSum = 0;
+
+// capture mouse helper function; should work with everything else
+script "capturemouse" ENTER CLIENTSIDE {
+    int PlayerPitchDelta = GetPlayerInput(PlayerNumber(),INPUT_PITCH);
+    int PlayerYawDelta = GetPlayerInput(Playernumber(),INPUT_YAW);
+    int playerDeltaMag = 0;
+    int playerDeltaAngle = 0;
+    int MouseAngle = 0;
+    if (PlayerPitchDelta != 0 && PlayerYawDelta != 0) {
+        // update arrays with magnitudes and angles
+        playerDeltaMag   = VectorLength(PlayerYawDelta,PlayerPitchDelta);       
+        // if mouse movement magnitude is too small, 
+        // consider it in the deadzone so drop this reading
+        //if (playerDeltaMag > 0.05) {
+            // calculate new values
+            playerDeltaAngle = VectorAngle(FixedMul(0.05,PlayerYawDelta),PlayerPitchDelta);
+            // replace element fm_arrayIndex and  then re-calculate vector angle
+            // and magnitude
+            fm_magArray[fm_arrayIndex] = playerDeltaMag;
+            fm_angleArray[fm_arrayIndex] = playerDeltaAngle;
+            fm_arrayIndex = (fm_arrayIndex + 1) % FM_CAPTURELENGTH;
+            // recalculate sum vector
+            calcSumVector();
+        //}
+    }
+    if (GetUserCVar(PlayerNumber(),"fm_isopen") == true) {   
+        // prevent player from turning when the menu is open
+        ChangeActorPitch(0, GetActorPitch(0)+PlayerPitchDelta);
+        ChangeActorAngle(0, GetActorAngle(0)-PlayerYawDelta);
+    }
+    delay(1);
+    restart;
+}
+
+// using globals here...
+// helper function to calculate the sum of the vectors
+function void calcSumVector(void) {
+    // grab x components and y components of each vector
+    int xSum = 0;
+    int ySum = 0;
+    for (int i = 0; i < FM_CAPTURELENGTH; i++) { 
+        xSum += fixedMul(cos(fm_angleArray[i]), fm_magArray[i]);
+        ySum += fixedMul(sin(fm_angleArray[i]), fm_magArray[i]);
+    }
+    fm_angleSum = VectorAngle(xSum, ySum);
+    fm_magSum = VectorLength(xSum, ySum);
+}
 
 // Open fastmenu - this just sets a user CVar (this can probably not 
 // be a script but just be set in the console (i.e.: fm_isopen 1)
-script "fastmenu_open" (void) net {
+script "fastmenu_open"(void) net CLIENTSIDE {
 	SetUserCvar(PlayerNumber(),"fm_isopen",true);
 	if (DEBUG) {
 	Log(s:"Opening menu...");
 	}
 }
 
-script "fastmenu_display" ENTER { 
+script "fastmenu_display" ENTER CLIENTSIDE { 
 	if(GetUserCVar(PlayerNumber(),"fm_isopen") == false) {
 		Delay(1);
 		restart;
 	}
+    // fixed point variables
+    /*
+    int PlayerPitchDelta = GetPlayerInput(PlayerNumber(),INPUT_PITCH);
+    int PlayerYawDelta = GetPlayerInput(Playernumber(),INPUT_YAW);
+    int PlayerDeltaMag = 0;
+    if (PlayerPitchDelta != 0 && PlayerYawDelta != 0) {
+        PlayerDeltaMag = VectorLength (PlayerPitchDelta,PlayerYawDelta);
+    }
+    */
+    
 	int msgIndex = FM_MAGICNUMBER;
 	HudMessage(s:"Garbage menu";
 		HUDMSG_PLAIN, msgIndex, CR_TAN, 0.5, 0.4, 0);
 	msgIndex++;
 	
-	HudMessage(s:"X: ", d:(GetActorX(0)>>16);
+    /*
+	HudMessage(s:"DPitch: ", f:(PlayerPitchDelta);
 		HUDMSG_PLAIN, msgIndex, CR_CYAN, 0.45, 0.415, 0);
 	msgIndex++;
 	
-	HudMessage(s:"Y: ", d:(GetActorY(0)>>16);
+	HudMessage(s:"DYaw: ", f:(PlayerYawDelta);
 		HUDMSG_PLAIN, msgIndex, CR_CYAN, 0.55, 0.415, 0);
 	msgIndex++;
-
-	SetUserCVar(PlayerNumber(),"fm_active_hudmsgs",2);
-	Delay(1);
+    
+    HudMessage(s:"Mag: ", f:(PlayerDeltaMag);
+        HUDMSG_PLAIN, msgIndex, CR_CYAN, 0.5, 0.45, 0);
+    msgIndex++;
+    
+    // if magnitude is too low, don't set new angle
+    int MouseAngle = VectorAngle(PlayerYawDelta,PlayerPitchDelta);
+    if (PlayerDeltaMag < 0.015) {
+        MouseAngle = GetUserCvar(PlayerNumber(),"fm_float_rm_angle");
+    } else {
+        SetUserCVar(PlayerNumber(),"fm_float_rm_angle",MouseAngle);
+    }
+    */
+    
+    HudMessage(s:"Angle: ", f:(fm_angleSum);
+        HUDMSG_PLAIN, msgIndex, CR_CYAN, 0.5, 0.48, 0);
+    msgIndex++;
+    
+    
+    // now draw a circle to where we're selecting?
+    HudMessage(s:"o";
+        HUDMSG_PLAIN, msgIndex, CR_RED, 0.5-FixedMul(0.25,Cos(fm_angleSum)), 0.5-FixedMul(0.25,Sin(fm_angleSum)), 0);
+    msgIndex++;
+    
+    
+    SetUserCVar(PlayerNumber(),"fm_active_hudmsgs",msgIndex-FM_MAGICNUMBER);
+    Delay(1);
+    
 	restart;
 }
 
-script "fastmenu_close" (void) net {
+script "fastmenu_close"(void) net CLIENTSIDE {
 	if (DEBUG) {
 	Log(s:"Closing menu...");
 	}
 	clear_hud();
 }
 
-script "fastmenu_toggle" (void) net {
+script "fastmenu_toggle"(void) net CLIENTSIDE {
     if (GetUserCVar(PlayerNumber(),"fm_isopen") == false) {
         ACS_NamedExecute("fastmenu_open",0);       
     } else {
@@ -52,7 +159,21 @@ script "fastmenu_toggle" (void) net {
     }
 }
 
-function void clear_hud (void) {
+function int max(int a, int b) {
+    if (a > b) {
+        return a;
+    }
+    return b;
+}
+
+function int min(int a, int b) {
+    if (a < b) {
+        return a;
+    }
+    return b;
+}
+
+function void clear_hud(void) {
 	SetUserCvar(PlayerNumber(),"fm_isopen",false);
 	int i = FM_MAGICNUMBER;
 	int numHudElements = GetUserCVar(PlayerNumber(),"fm_active_hudmsgs");
