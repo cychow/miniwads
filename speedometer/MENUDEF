@@ -1,0 +1,24 @@
+// menudef
+
+// Add speedometer to HUDOptions menu
+
+
+OptionMenu "SM_options"
+{
+    Title "Speedometer Options"
+    Option "Enabled", "sm_show", "OnOff"
+    Slider "X position", "sm_xPos", 0.0, 1.0, 0.025, 3
+    Slider "Y position", "sm_yPos", 0.0, 1.0, 0.025, 3
+    Option "Show 'Speed:' ", "sm_showtext", "OnOff"
+    Slider "Text Color", "sm_color", 0, 24, 1
+    
+}
+
+/*
+AddOptionMenu "HUDOptions"
+{
+    // spacer
+    // StaticText ""
+    Submenu "Speedometer Options", "SM_options"
+}
+*/

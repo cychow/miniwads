@@ -1,0 +1,5 @@
+user float sm_xPos = 0.0;
+user float sm_yPos = 0.0;
+user int sm_color = 0;
+user bool sm_show = true;
+user bool sm_showtext = true;

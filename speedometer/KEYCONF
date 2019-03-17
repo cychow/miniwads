@@ -1,0 +1,3 @@
+
+addkeysection "Speedometer" "sm_keys"
+addmenukey "Speedometer Menu" "openmenu SM_options"

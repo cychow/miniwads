@@ -1,0 +1,37 @@
+#library "SPEEDOMETER"
+#include "zcommon.acs"
+
+#define SM_MAGICNUMBER -2157634
+#define DEBUG false
+
+//// µscript - get player's current speed and print it
+script "printVelocity" ENTER CLIENTSIDE {
+    if (GetUserCvar(PlayerNumber(),"sm_show")) {
+        int playerVelocity = VectorLength(GetActorVelX(0), GetActorVelY(0));
+        if (GetUserCvar(PlayerNumber(),"sm_showtext")) {
+        SetFont("BIGFONT");
+            HudMessage(s:"Speed: ",
+            f:playerVelocity;
+            HUDMSG_PLAIN , SM_MAGICNUMBER, 
+                GetUserCVar(PlayerNumber(),"sm_color"), 
+                GetUserCVar(PlayerNumber(),"sm_xPos"), 
+                GetUserCVar(PlayerNumber(),"sm_yPos"), 
+                0
+            );
+        } else {
+            // don't show "speed:"
+            SetFont("BIGFONT");
+            HudMessage(f:playerVelocity;
+            HUDMSG_PLAIN , SM_MAGICNUMBER, 
+                GetUserCVar(PlayerNumber(),"sm_color"), 
+                GetUserCVar(PlayerNumber(),"sm_xPos"), 
+                GetUserCVar(PlayerNumber(),"sm_yPos"), 
+                0
+            );
+        }
+    } else {
+        HudMessage(s:""; HUDMSG_PLAIN,SM_MAGICNUMBER,0,0,0,0);
+    }
+    delay(1);
+    restart;
+}

@@ -5,7 +5,7 @@
 #define DEBUG false
 #define FM_CAPTURELENGTH 8
 
-
+/*
 //// µscript - get player's current speed and print it
 script "printVelocity" ENTER CLIENTSIDE {
     int playerVelocity = VectorLength(GetActorVelX(0), GetActorVelY(0));
@@ -15,7 +15,7 @@ script "printVelocity" ENTER CLIENTSIDE {
 		HUDMSG_PLAIN , FM_MAGICNUMBER-1, CR_TAN, 0, 0, 0);
     delay(1);
     restart;
-}
+}*/
 
 // let's try a radial menu...
 // let's try a rolling average - that always works, right?
