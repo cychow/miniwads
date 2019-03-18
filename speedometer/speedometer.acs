@@ -8,10 +8,13 @@
 script "printVelocity" ENTER CLIENTSIDE {
     if (GetUserCvar(PlayerNumber(),"sm_show")) {
         int playerVelocity = VectorLength(GetActorVelX(0), GetActorVelY(0));
+        int playerVelocityWhole = playerVelocity>>16;
+        // get lower 2 digits of fractional component
+        int playerVelocityFrac = FixedMul(100.0,(playerVelocity-(playerVelocityWhole<<16)))>>16;
         if (GetUserCvar(PlayerNumber(),"sm_showtext")) {
         SetFont("BIGFONT");
             HudMessage(s:"Speed: ",
-            f:playerVelocity;
+            d:playerVelocityWhole, s:".", d:playerVelocityFrac;
             HUDMSG_PLAIN , SM_MAGICNUMBER, 
                 GetUserCVar(PlayerNumber(),"sm_color"), 
                 GetUserCVar(PlayerNumber(),"sm_xPos"), 
@@ -21,7 +24,8 @@ script "printVelocity" ENTER CLIENTSIDE {
         } else {
             // don't show "speed:"
             SetFont("BIGFONT");
-            HudMessage(f:playerVelocity;
+            HudMessage(
+            d:playerVelocityWhole, s:".", d:playerVelocityFrac;
             HUDMSG_PLAIN , SM_MAGICNUMBER, 
                 GetUserCVar(PlayerNumber(),"sm_color"), 
                 GetUserCVar(PlayerNumber(),"sm_xPos"), 
